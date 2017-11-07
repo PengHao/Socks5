@@ -1,0 +1,93 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.wolfpeng</groupId>
+  <artifactId>Socks5</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>Socks5</name>
+  <url>http://maven.apache.org</url>
+
+  <modules>
+    <module>Core</module>
+    <module>Server</module>
+    <module>MotherChildren</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.31</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.wolfpeng</groupId>
+      <artifactId>Server</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.wolfpeng</groupId>
+      <artifactId>Core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.wolfpeng</groupId>
+      <artifactId>MotherChildren</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <!--spring相关包-->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>4.3.1.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>4.3.1.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>4.3.1.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.30</version>
+    </dependency>
+
+
+  </dependencies>
+  <!--<build>-->
+    <!--<finalName>HelloWebMVC</finalName>-->
+    <!--<resources>-->
+      <!--&lt;!&ndash;表示把java目录下的有关xml文件,properties文件编译/打包的时候放在resource目录下&ndash;&gt;-->
+      <!--<resource>-->
+        <!--<directory>${basedir}/src/main/java</directory>-->
+        <!--<includes>-->
+          <!--<include>**/*.properties</include>-->
+          <!--<include>**/*.xml</include>-->
+        <!--</includes>-->
+      <!--</resource>-->
+      <!--<resource>-->
+        <!--<directory>${basedir}/src/main/resources</directory>-->
+      <!--</resource>-->
+    <!--</resources>-->
+    <!--<plugins>-->
+      <!--&lt;!&ndash;servlet容器 jetty插件&ndash;&gt;-->
+      <!--<plugin>-->
+        <!--<groupId>org.eclipse.jetty</groupId>-->
+        <!--<artifactId>jetty-maven-plugin</artifactId>-->
+        <!--<version>9.3.10.v20160621</version>-->
+      <!--</plugin>-->
+    <!--</plugins>-->
+  <!--</build>-->
+</project>
