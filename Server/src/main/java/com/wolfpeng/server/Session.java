@@ -3,15 +3,15 @@ package com.wolfpeng.server;
 import com.wolfpeng.core.http.HttpConnection;
 import com.wolfpeng.core.http.HttpConnectionHandle;
 import com.wolfpeng.core.http.HttpConnectionStreamProcess;
+import com.wolfpeng.core.util.HostPort;
 import com.wolfpeng.core.util.Utils;
 import com.wolfpeng.core.util.Utils.Authorization;
 import com.wolfpeng.core.util.Utils.SockProto;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
-
-import javax.annotation.Resource;
 
 /**
  * Created by penghao on 2017/1/19.
@@ -25,9 +25,6 @@ public class Session implements Runnable {
     public Socket clientSocket;
 
     public Socket serverSocket;
-
-    @Resource
-    SocksUserDao userDao;
 
     /**
      * 是否开启socks4代理
@@ -53,7 +50,12 @@ public class Session implements Runnable {
         // 获取来源的地址用于日志打印使用
         try {
             httpConnection = new HttpConnection();
-            serverSocket = sockProto.serverSocket(clientSocket, null);
+            serverSocket = sockProto.serverSocket(clientSocket, null, new Utils.FlowHostPortGetter() {
+                public HostPort get(HostPort hostPort) {
+
+                    return hostPort;
+                }
+            });
             httpConnection.init(getHost(), getPort());
             HttpConnectionHandle httpConnectionHandle = null;
             try {

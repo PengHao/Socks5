@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -17,13 +18,18 @@ public class Utils {
     }
 
     /**
-     * socks5代理的登录用户名，如果 不为空表示需要登录验证
+     * 转发地址获取接口
      */
-    public static String user;
-    /**
-     * socks5代理的登录密码，
-     */
-    public static String pwd;
+    public interface FlowHostPortGetter {
+
+        /**
+         * 根据客户端的hostPort获取转发的地址
+         *
+         * @param hostPort
+         * @return
+         */
+        HostPort get(HostPort hostPort);
+    }
 
     private static final Integer sock4 = 4;
     private static final Integer sock5 = 5;
@@ -33,11 +39,12 @@ public class Utils {
         Sock5(sock5);
 
         private Integer value;
+
         SockProto(Integer value) {
             this.value = value;
         }
 
-        public Socket serverSocket(Socket clientSocket, Authorization authorization) throws IOException {
+        public Socket serverSocket(Socket clientSocket, Authorization authorization, FlowHostPortGetter flowHostPortGetter) throws IOException {
             InputStream client_in = clientSocket.getInputStream();
             Socket serverSocket = null;
 
@@ -48,10 +55,10 @@ public class Utils {
 
                 if ((Utils.sock4.equals(value) && 0x04 == protocol)) {
 
-                    serverSocket = createSock4Socket(clientSocket, authorization);
+                    serverSocket = createSock4Socket(clientSocket, authorization, flowHostPortGetter);
 
                 } else if ((Utils.sock5.equals(value) && 0x05 == protocol)) {
-                    serverSocket = createSock5Socket(clientSocket, authorization);
+                    serverSocket = createSock5Socket(clientSocket, authorization, flowHostPortGetter);
                 } else {// 非socks 4 ,5 协议的请求
                     log("not socks proxy : %s  openSock4[] openSock5[]", tmp[0]);
                 }
@@ -60,7 +67,7 @@ public class Utils {
         }
 
 
-        private Socket createSock4Socket(Socket clientSocket, Authorization authorization) throws IOException {
+        private Socket createSock4Socket(Socket clientSocket, Authorization authorization, FlowHostPortGetter flowHostPortGetter) throws IOException {
             InputStream in = clientSocket.getInputStream();
             OutputStream out = clientSocket.getOutputStream();
 
@@ -70,14 +77,16 @@ public class Utils {
 
             int port = ByteBuffer.wrap(tmp, 1, 2).asShortBuffer().get() & 0xFFFF;
             String host = getHost((byte) 0x01, in);
+            HostPort hostPort = Objects.nonNull(flowHostPortGetter) ?
+                    flowHostPortGetter.get(new HostPort(host, port)) : new HostPort(host, port);
             in.read();
             byte[] rsv = new byte[8];
             try {
-                proxy_socket = new Socket(host, port);
-                log("connect [%s] %s:%s", tmp[1], host, port);
+                proxy_socket = new Socket(hostPort.getHost(), hostPort.getPort());
+                log("connect [%s] %s:%s", tmp[1], hostPort.getHost(), hostPort.getPort());
                 rsv[1] = 90;// 代理成功
             } catch (Exception e) {
-                log("connect exception  %s:%s", host, port);
+                log("connect exception  %s:%s", hostPort.getHost(), hostPort.getPort());
                 rsv[1] = 91;// 代理失败.
             }
             out.write(rsv);
@@ -85,7 +94,7 @@ public class Utils {
             return proxy_socket;
         }
 
-        private Socket createSock5Socket(Socket clientSocket, Authorization authorization) throws IOException {
+        private Socket createSock5Socket(Socket clientSocket, Authorization authorization, FlowHostPortGetter flowHostPortGetter) throws IOException {
             InputStream in = clientSocket.getInputStream();
             OutputStream out = clientSocket.getOutputStream();
 
@@ -103,7 +112,7 @@ public class Utils {
             if (authorization != null) {
                 method = 0x02;
             }
-            tmp = new byte[] { 0x05, method };
+            tmp = new byte[]{0x05, method};
             out.write(tmp);
             out.flush();
             Object resultTmp = null;
@@ -123,7 +132,7 @@ public class Utils {
 
                     if (authorization.login(user, pwd)) {
                         isLogin = true;
-                        tmp = new byte[] { 0x05, 0x00 };
+                        tmp = new byte[]{0x05, 0x00};
                         out.write(tmp);
                         out.flush();
                         log("%s login success !", user);
@@ -141,15 +150,18 @@ public class Utils {
                 tmp = new byte[2];
                 in.read(tmp);
                 port = ByteBuffer.wrap(tmp).asShortBuffer().get() & 0xFFFF;
-                log("connect %s:%s", host, port);
+                HostPort hostPort = Objects.nonNull(flowHostPortGetter) ?
+                        flowHostPortGetter.get(new HostPort(host, port)) : new HostPort(host, port);
+
+                log("connect %s:%s", hostPort.getHost(), hostPort.getPort());
                 ByteBuffer rsv = ByteBuffer.allocate(10);
                 rsv.put((byte) 0x05);
                 try {
                     if (0x01 == cmd) {
-                        resultTmp = new Socket(host, port);
+                        resultTmp = new Socket(hostPort.getHost(), hostPort.getPort());
                         rsv.put((byte) 0x00);
                     } else if (0x02 == cmd) {
-                        resultTmp = new java.net.ServerSocket(port);
+                        resultTmp = new java.net.ServerSocket(hostPort.getPort());
                         rsv.put((byte) 0x00);
                     } else {
                         rsv.put((byte) 0x05);
@@ -166,7 +178,7 @@ public class Utils {
                 rsv.putShort(localPort);
                 tmp = rsv.array();
             } else {
-                tmp = new byte[] { 0x05, 0x01 };
+                tmp = new byte[]{0x05, 0x01};
                 log("socks server need login,but no login info .");
             }
             out.write(tmp);
@@ -187,15 +199,14 @@ public class Utils {
     }
 
 
-
     /**
      * 获取目标的服务器地址
      *
-     * @createTime 2014年12月14日 下午8:32:15
      * @param type
      * @param in
      * @return
      * @throws IOException
+     * @createTime 2014年12月14日 下午8:32:15
      */
     public static String getHost(byte type, InputStream in) throws IOException {
         String host = null;
@@ -227,8 +238,8 @@ public class Utils {
     /**
      * IO操作中共同的关闭方法
      *
-     * @createTime 2014年12月14日 下午7:50:56
      * @param closeable
+     * @createTime 2014年12月14日 下午7:50:56
      */
     public static final void closeIo(Socket closeable) {
         if (null != closeable) {
@@ -243,8 +254,8 @@ public class Utils {
     /**
      * IO操作中共同的关闭方法
      *
-     * @createTime 2014年12月14日 下午7:50:56
      * @param closeable
+     * @createTime 2014年12月14日 下午7:50:56
      */
     public static final void closeIo(Closeable closeable) {
         if (null != closeable) {
