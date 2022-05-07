@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Date;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
@@ -34,6 +35,15 @@ public class Utils {
     private static final Integer sock4 = 4;
     private static final Integer sock5 = 5;
 
+    class SocketProtocol {
+        // socket代理协议 0x04；0x05
+        byte protocol;
+
+
+
+
+
+    }
     public enum SockProto {
         Sock4(sock4),
         Sock5(sock5);
@@ -44,9 +54,15 @@ public class Utils {
             this.value = value;
         }
 
-        public Socket serverSocket(Socket clientSocket, Authorization authorization, FlowHostPortGetter flowHostPortGetter) throws IOException {
+        public Socket serverSocket(SocketChannel  clientSocketChannel, Authorization authorization, FlowHostPortGetter flowHostPortGetter) throws IOException {
+
             InputStream client_in = clientSocket.getInputStream();
             Socket serverSocket = null;
+
+
+
+
+
 
             byte[] tmp = new byte[1];
             int n = client_in.read(tmp);
@@ -101,12 +117,14 @@ public class Utils {
             String host;
             Integer port;
             byte[] tmp = new byte[2];
+            // 长度3
             in.read(tmp);
             boolean isLogin = false;
             byte method = tmp[1];
             int a = 0;
             if (0x02 == tmp[0]) {
                 method = 0x00;
+                // 长度7
                 a = in.read();
             }
             if (authorization != null) {
@@ -117,10 +135,12 @@ public class Utils {
             out.flush();
             Object resultTmp = null;
             if (0x02 == method) {
+                // 长度 11
                 int b = in.read();
                 String user;
                 String pwd;
                 if (0x01 == b) {
+                    // 长度 15
                     b = in.read();
                     tmp = new byte[b];
                     in.read(tmp);

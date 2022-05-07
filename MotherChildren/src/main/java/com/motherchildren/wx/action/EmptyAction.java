@@ -25,12 +25,12 @@ import com.wolfpeng.core.http.HttpConnectionStreamProcess;
 import com.wolfpeng.core.http.HttpData;
 import com.wolfpeng.core.http.HttpHead;
 import com.wolfpeng.core.util.Utils;
-import com.wolfpeng.server.ServerApplication;
+import com.wolfpeng.server.ProxyServer;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by penghao on 2017/5/12.
- * Copyright ? 2017Äê Alibaba. All rights reserved.
+ * Copyright ? 2017ï¿½ï¿½ Alibaba. All rights reserved.
  */
 @Component
 public class EmptyAction implements Action {
@@ -93,13 +93,13 @@ public class EmptyAction implements Action {
             };
 
             CountDownLatch latch = new CountDownLatch(2);
-            HttpConnectionHandle httpConnectionHandle = (HttpConnectionHandle)ServerApplication.getBean(head.getHeaderProperty("Host"));
+            HttpConnectionHandle httpConnectionHandle = (HttpConnectionHandle) ProxyServer.getBean(head.getHeaderProperty("Host"));
             HttpConnectionStreamProcess.process(clientInputStream, clientOutputStream, inputStream, outputStream, connection, httpConnectionHandle, latch);
             latch.await();
         }
         catch (Exception e) {
             // TODO Auto-generated catch block
-            System.out.println("·¢ËÍGETÇëÇó³öÏÖÒì³££¡"+e);
+            System.out.println("ï¿½ï¿½ï¿½ï¿½GETï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½"+e);
             e.printStackTrace();
         }
         finally

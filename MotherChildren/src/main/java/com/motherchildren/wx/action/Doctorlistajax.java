@@ -14,12 +14,12 @@ import com.motherchildren.wx.moudle.Task;
 import com.wolfpeng.core.http.HttpConnection;
 import com.wolfpeng.core.http.HttpData;
 import com.wolfpeng.core.util.Utils;
-import com.wolfpeng.server.ServerApplication;
+import com.wolfpeng.server.ProxyServer;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by penghao on 2017/5/18.
- * Copyright ? 2017Äê Alibaba. All rights reserved.
+ * Copyright ? 2017ï¿½ï¿½ Alibaba. All rights reserved.
  */
 
 @Component
@@ -51,7 +51,7 @@ public class Doctorlistajax extends EmptyAction{
                 for (Task task : entry.getValue()) {
                     Doctor doctor = doctorDao.getDoctorById(task.getDoctorId());
                     if ( d.getDoctorId().equals(doctor.getDoctorId())) {
-                        Doctordetail doctordetail = ServerApplication.getBean(Doctordetail.class);
+                        Doctordetail doctordetail = ProxyServer.getBean(Doctordetail.class);
                         task.setDoctorTime(doctor.getTime());
                         return doctordetail.makeRequest(session, card, task);
                     }
@@ -129,7 +129,7 @@ public class Doctorlistajax extends EmptyAction{
     @Override
     public HttpData processResponse(HttpConnection connection) {
         try {
-            //·µ»ØÒ½ÉúÁÐ±íÊý¾Ý
+            //ï¿½ï¿½ï¿½ï¿½Ò½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½
             super.processResponse(connection);
             parserDoctors(connection.getResponse(), connection.getRequest().httpHead.getGetProperty("classid"), true);
         } catch (Exception e) {

@@ -8,12 +8,12 @@ import com.wolfpeng.core.http.HttpConnection;
 import com.wolfpeng.core.http.HttpData;
 import com.wolfpeng.core.http.HttpHead;
 import com.wolfpeng.core.util.Utils;
-import com.wolfpeng.server.ServerApplication;
+import com.wolfpeng.server.ProxyServer;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by penghao on 2017/5/10.
- * Copyright ? 2017Äê Alibaba. All rights reserved.
+ * Copyright ? 2017ï¿½ï¿½ Alibaba. All rights reserved.
  */
 @Component
 public class Index extends EmptyAction {
@@ -69,7 +69,7 @@ public class Index extends EmptyAction {
             //login success
             Session session = updateSession(connection);
             List<Card> cards = cardDao.getCards(session.getId());
-            Doctorlistajax doctorlistajax = ServerApplication.getBean(Doctorlistajax.class);
+            Doctorlistajax doctorlistajax = ProxyServer.getBean(Doctorlistajax.class);
             for (Card card : cards) {
                 List<Task> tasks = taskDao.getTasks(card.getId());
                 HttpData data = doctorlistajax.makeRequest(session, card, tasks);
